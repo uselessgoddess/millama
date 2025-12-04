@@ -26,7 +26,7 @@ use {
   config::{Config, TrackedUser},
   llm::ChatMessage,
   tokio::{task::JoinSet, time::sleep},
-  tracing::{trace, debug, error, info, warn},
+  tracing::{debug, error, info, trace, warn},
 };
 
 struct BotState {
@@ -179,11 +179,7 @@ async fn handle_update(
       Err(peer) => peer,
     };
 
-    trace!(
-        "Message from user ({}): {}",
-        peer.id,
-        message.text()
-      );
+    trace!("Message from user ({}): {}", peer.id, message.text());
 
     // Handle messages from tracked users
     let tracked_user = {
