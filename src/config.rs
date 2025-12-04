@@ -35,6 +35,8 @@ pub struct AiConfig {
   pub models: Vec<String>,
   #[serde(default = "default_temperature")]
   pub temperature: f32,
+  #[serde(default)]
+  pub base_system_prompt: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

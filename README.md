@@ -135,6 +135,7 @@ cargo run -- --trace   # Trace level (very verbose)
   - OpenAI: `gpt-4`, `gpt-3.5-turbo`, etc.
   - Ollama: `llama2`, `mistral`, etc.
 - `temperature` (optional): Generation temperature 0.0-2.0 (default: 1.5)
+- `base_system_prompt` (optional): Global base system prompt prepended to all user-specific prompts
 
 ### `[settings]`
 - `session_file` (optional): Session file path (default: userbot.session)

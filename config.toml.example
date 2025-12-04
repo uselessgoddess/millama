@@ -39,6 +39,11 @@ model = "meta-llama/llama-4-maverick-17b-128e-instruct"
 # Temperature for generation (optional, defaults to 1.5)
 temperature = 1.5
 
+# Global base system prompt (optional)
+# This prompt will be prepended to all user-specific system prompts
+# Useful for setting universal behavior across all chats
+# base_system_prompt = "You are a helpful assistant. Always be polite and professional."
+
 [settings]
 # Session file location
 session_file = "userbot.session"

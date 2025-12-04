@@ -309,6 +309,7 @@ async fn process_ai_draft_with_guidance(
     history_limit,
     bot_client,
     bot_self_id,
+    base_system_prompt,
   ) = {
     let lock = state.lock().unwrap();
     (
@@ -319,6 +320,7 @@ async fn process_ai_draft_with_guidance(
       lock.config.settings.history_limit,
       lock.bot_client.clone(),
       lock.bot_self_id,
+      lock.config.ai.base_system_prompt.clone(),
     )
   };
 
@@ -360,11 +362,26 @@ async fn process_ai_draft_with_guidance(
 
   debug!("Loaded {} messages from history", history_buf.len());
 
-  // Build the system prompt with optional rephrase guidance
-  let system_prompt = if let Some(guidance) = rephrase_guidance.as_ref() {
-    format!("{}\n\nAdditional guidance: {}", user.system_prompt, guidance)
-  } else {
-    user.system_prompt.clone()
+  // Build the system prompt with optional base prompt and rephrase guidance
+  let system_prompt = {
+    let mut prompt = String::new();
+
+    // Add base system prompt if configured
+    if let Some(base) = base_system_prompt.as_ref() {
+      prompt.push_str(base);
+      prompt.push_str("\n\n");
+    }
+
+    // Add user-specific system prompt
+    prompt.push_str(&user.system_prompt);
+
+    // Add rephrase guidance if provided
+    if let Some(guidance) = rephrase_guidance.as_ref() {
+      prompt.push_str("\n\nAdditional guidance: ");
+      prompt.push_str(guidance);
+    }
+
+    prompt
   };
 
   let response_text = llm::generate_reply_with_fallback(
@@ -662,7 +679,15 @@ async fn regenerate_with_guidance(
   guidance: String,
   history: Vec<ChatMessage>,
 ) -> Result<()> {
-  let (api_key, api_url, models, temperature, bot_client, bot_self_id) = {
+  let (
+    api_key,
+    api_url,
+    models,
+    temperature,
+    bot_client,
+    bot_self_id,
+    base_system_prompt,
+  ) = {
     let lock = state.lock().unwrap();
     (
       lock.config.ai.api_key.clone(),
@@ -671,12 +696,29 @@ async fn regenerate_with_guidance(
       lock.config.ai.temperature,
       lock.bot_client.clone(),
       lock.bot_self_id,
+      lock.config.ai.base_system_prompt.clone(),
     )
   };
 
-  // Build the system prompt with rephrase guidance
-  let system_prompt =
-    format!("{}\n\nAdditional guidance: {}", user.system_prompt, guidance);
+  // Build the system prompt with optional base prompt and rephrase guidance
+  let system_prompt = {
+    let mut prompt = String::new();
+
+    // Add base system prompt if configured
+    if let Some(base) = base_system_prompt.as_ref() {
+      prompt.push_str(base);
+      prompt.push_str("\n\n");
+    }
+
+    // Add user-specific system prompt
+    prompt.push_str(&user.system_prompt);
+
+    // Add rephrase guidance
+    prompt.push_str("\n\nAdditional guidance: ");
+    prompt.push_str(&guidance);
+
+    prompt
+  };
 
   debug!("Regenerating AI response with guidance");
 
