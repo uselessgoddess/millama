@@ -148,7 +148,6 @@ async fn run_client(config: Config) -> Result<()> {
     lock.bot_self_id = self_id_bare;
   }
 
-  let self_id = PeerId::self_user();
   info!("Running as self user (ID: {})", self_id_bare);
 
   let mut update_stream =
@@ -194,9 +193,7 @@ async fn run_client(config: Config) -> Result<()> {
             let state = state.clone();
 
             tasks.spawn(async move {
-              if let Err(e) =
-                handle_update(client, update, state, self_id).await
-              {
+              if let Err(e) = handle_update(client, update, state).await {
                 error!("Error handling update: {}", e);
               }
             });
@@ -214,7 +211,6 @@ async fn handle_update(
   client: Client,
   update: Update,
   state: Arc<Mutex<BotState>>,
-  self_id: PeerId,
 ) -> Result<()> {
   if let Update::NewMessage(message) = update {
     let peer = match message.peer() {
@@ -222,8 +218,9 @@ async fn handle_update(
       Err(peer) => peer,
     };
 
-    // TODO: escape any control characters  
-    trace!("Message from user ({}): {}", peer.id, message.text());
+    // Escape control characters for logging to prevent log injection
+    let message_text = message.text().escape_debug().to_string();
+    trace!("Message from user ({}): {}", peer.id, message_text);
 
     // Handle messages from tracked users
     let tracked_user = {
@@ -294,7 +291,7 @@ async fn process_ai_draft(
   let (
     api_key,
     api_url,
-    model,
+    models,
     temperature,
     history_limit,
     bot_client,
@@ -304,7 +301,7 @@ async fn process_ai_draft(
     (
       lock.config.ai.api_key.clone(),
       lock.config.ai.api_url.clone(),
-      lock.config.ai.model.clone(),
+      lock.config.ai.models.clone(),
       lock.config.ai.temperature,
       lock.config.settings.history_limit,
       lock.bot_client.clone(),
@@ -317,11 +314,13 @@ async fn process_ai_draft(
 
   debug!("Fetching message history for peer {}", peer.id);
 
-  // TODO: improve this api, avoid this manual cast
-  //  you can resolve peer only for user, not chat id 
-  let peer = PeerRef { id: PeerId::user(peer.id.bare_id()), auth: Default::default() };
+  // Convert peer ID to user peer for message history access
+  // This handles both private messages and ensures proper peer resolution
+  let peer_for_messages =
+    PeerRef { id: PeerId::user(peer.id.bare_id()), auth: Default::default() };
+
   let chat_peer = client
-    .resolve_peer(peer)
+    .resolve_peer(peer_for_messages)
     .await
     .context("Could not resolve peer to fetch history")?;
 
@@ -348,10 +347,10 @@ async fn process_ai_draft(
 
   debug!("Loaded {} messages from history", history_buf.len());
 
-  let response_text = llm::generate_reply(
+  let response_text = llm::generate_reply_with_fallback(
     &api_key,
     &api_url,
-    &model,
+    models,
     temperature,
     &user.system_prompt,
     history_buf,
@@ -362,10 +361,12 @@ async fn process_ai_draft(
   info!("Generated AI response for user {}", user.name);
 
   // Send draft via Bot API with inline buttons
-  let draft_message =
-    format!("*AI Draft Suggestion for {}*\n\n{}\n\n", user.name, response_text);
-
   let target_id = peer.id.bare_id();
+  let draft_message = format!(
+    "*AI Draft Suggestion for @{}*\n\n{}\n\n",
+    user.name, response_text
+  );
+
   let callback_data = format!("approve:{}", target_id);
   let reject_data = format!("reject:{}", target_id);
 
@@ -459,11 +460,7 @@ async fn handle_bot_callback(
 
     // Update the bot message to show it was sent
     bot_client
-      .edit_message_text(
-        message.chat.id,
-        message.message_id,
-        message_text,
-      )
+      .edit_message_text(message.chat.id, message.message_id, message_text)
       .await
       .context("Failed to edit message")?;
 

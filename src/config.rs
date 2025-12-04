@@ -32,7 +32,7 @@ pub struct TelegramConfig {
 pub struct AiConfig {
   pub api_key: String,
   pub api_url: String,
-  pub model: String,
+  pub models: Vec<String>,
   #[serde(default = "default_temperature")]
   pub temperature: f32,
 }
@@ -55,6 +55,7 @@ pub struct TrackedUser {
 }
 
 impl TrackedUser {
+  #[allow(dead_code)]
   pub fn user_id(&self) -> PeerId {
     PeerId::user(self.id)
   }
@@ -99,6 +100,7 @@ impl Config {
   }
 
   pub fn users_map(&self) -> HashMap<PeerId, TrackedUser> {
+    // Map chat IDs for matching incoming messages
     self.users.iter().map(|user| (user.chat_id(), user.clone())).collect()
   }
 }

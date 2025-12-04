@@ -137,7 +137,7 @@ impl BotClient {
 
     trace!("Sending message with buttons to chat {}", chat_id);
 
-    let response = self
+    let http_response = self
       .client
       .post(self.api_url("sendMessage"))
       .json(&request)
@@ -145,14 +145,28 @@ impl BotClient {
       .await
       .context("Failed to send HTTP request")?;
 
-    let response: TelegramResponse<Message> =
-      response.json().await.context("Failed to parse response")?;
+    let status = http_response.status();
+
+    // Handle rate limiting
+    if status.as_u16() == 429 {
+      let error_text = http_response.text().await.unwrap_or_default();
+      debug!("Bot API rate limit (429) reached: {}", error_text);
+      anyhow::bail!("Bot API rate limit (429): {}", error_text);
+    }
+
+    let response_text =
+      http_response.text().await.context("Failed to read response body")?;
+
+    trace!("Bot API response: {}", response_text);
+
+    let response: TelegramResponse<Message> = json::from_str(&response_text)
+      .context(format!("Failed to parse response: {}", response_text))?;
 
     if !response.ok {
-      anyhow::bail!(
-        "Telegram API error: {}",
-        response.description.unwrap_or_else(|| "Unknown error".to_string())
-      );
+      let error_desc =
+        response.description.unwrap_or_else(|| "Unknown error".to_string());
+      debug!("Telegram API error: {}", error_desc);
+      anyhow::bail!("Telegram API error: {}", error_desc);
     }
 
     let message = response.result.context("Missing result in response")?;
@@ -177,7 +191,7 @@ impl BotClient {
 
     trace!("Editing message {} in chat {}", message_id, chat_id);
 
-    let response = self
+    let http_response = self
       .client
       .post(self.api_url("editMessageText"))
       .json(&request)
@@ -185,14 +199,28 @@ impl BotClient {
       .await
       .context("Failed to send HTTP request")?;
 
-    let response: TelegramResponse<Message> =
-      response.json().await.context("Failed to parse response")?;
+    let status = http_response.status();
+
+    // Handle rate limiting
+    if status.as_u16() == 429 {
+      let error_text = http_response.text().await.unwrap_or_default();
+      debug!("Bot API rate limit (429) reached: {}", error_text);
+      anyhow::bail!("Bot API rate limit (429): {}", error_text);
+    }
+
+    let response_text =
+      http_response.text().await.context("Failed to read response body")?;
+
+    trace!("Bot API response: {}", response_text);
+
+    let response: TelegramResponse<Message> = json::from_str(&response_text)
+      .context(format!("Failed to parse response: {}", response_text))?;
 
     if !response.ok {
-      anyhow::bail!(
-        "Telegram API error: {}",
-        response.description.unwrap_or_else(|| "Unknown error".to_string())
-      );
+      let error_desc =
+        response.description.unwrap_or_else(|| "Unknown error".to_string());
+      debug!("Telegram API error: {}", error_desc);
+      anyhow::bail!("Telegram API error: {}", error_desc);
     }
 
     debug!("Edited message {} in chat {}", message_id, chat_id);
