@@ -15,7 +15,7 @@ pub const DEFAULT_HISTORY_LIMIT: usize = 25;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
   pub telegram: TelegramConfig,
-  pub groq: GroqConfig,
+  pub ai: AiConfig,
   pub settings: Settings,
   #[serde(default)]
   pub users: Vec<TrackedUser>,
@@ -29,7 +29,7 @@ pub struct TelegramConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GroqConfig {
+pub struct AiConfig {
   pub api_key: String,
   pub api_url: String,
   pub model: String,

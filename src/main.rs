@@ -1,5 +1,5 @@
 mod config;
-mod groq;
+mod llm;
 
 use std::{
   collections::HashMap,
@@ -24,7 +24,7 @@ use {
 use {
   anyhow::{Context, Result},
   config::{Config, TrackedUser},
-  groq::ChatMessage,
+  llm::ChatMessage,
   tokio::{task::JoinSet, time::sleep},
   tracing::{debug, error, info, warn},
 };
@@ -267,10 +267,10 @@ async fn process_ai_draft(
   let (api_key, api_url, model, temperature, history_limit) = {
     let lock = state.lock().unwrap();
     (
-      lock.config.groq.api_key.clone(),
-      lock.config.groq.api_url.clone(),
-      lock.config.groq.model.clone(),
-      lock.config.groq.temperature,
+      lock.config.ai.api_key.clone(),
+      lock.config.ai.api_url.clone(),
+      lock.config.ai.model.clone(),
+      lock.config.ai.temperature,
       lock.config.settings.history_limit,
     )
   };
@@ -307,7 +307,7 @@ async fn process_ai_draft(
 
   debug!("Loaded {} messages from history", history_buf.len());
 
-  let response_text = groq::generate_reply(
+  let response_text = llm::generate_reply(
     &api_key,
     &api_url,
     &model,

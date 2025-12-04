@@ -53,7 +53,7 @@ pub async fn generate_reply(
   let payload =
     CompletionRequest { model: model.to_string(), messages, temperature };
 
-  debug!("Sending request to Groq API");
+  debug!("Sending request to OpenAI-compatible API");
   let response = client
     .post(api_url)
     .header("Authorization", format!("Bearer {}", api_key))

@@ -9,14 +9,25 @@ api_hash = "your_api_hash_here"
 # Bot token for inline button approval (optional, if not set uses self-messaging)
 # bot_token = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
 
-[groq]
-# Your Groq API key (required)
-api_key = "your_groq_api_key_here"
+[ai]
+# OpenAI-compatible API configuration
+# Works with Groq, local Ollama, OpenAI, or any compatible provider
+
+# API key (required for most providers, may be optional for local Ollama)
+api_key = "your_api_key_here"
 
 # API endpoint (required)
+# Examples:
+#   Groq: "https://api.groq.com/openai/v1/chat/completions"
+#   OpenAI: "https://api.openai.com/v1/chat/completions"
+#   Local Ollama: "http://localhost:11434/v1/chat/completions"
 api_url = "https://api.groq.com/openai/v1/chat/completions"
 
 # Model to use (required)
+# Examples:
+#   Groq: "meta-llama/llama-4-maverick-17b-128e-instruct"
+#   OpenAI: "gpt-4"
+#   Ollama: "llama2", "mistral", etc.
 model = "meta-llama/llama-4-maverick-17b-128e-instruct"
 
 # Temperature for generation (optional, defaults to 1.5)

@@ -1,5 +1,5 @@
 pub mod config;
-pub mod groq;
+pub mod llm;
 
 #[cfg(test)]
 mod tests {
