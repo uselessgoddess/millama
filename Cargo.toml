@@ -15,7 +15,7 @@ reqwest = { version = "0.11", features = ["json"] }
 
 serde = { version = "1", features = ["derive"] }
 json = { package = "serde_json", version = "1" }
-toml = "0.8"
+config = "0.14"
 
 # CLI and logging
 clap = { version = "4", features = ["derive"] }

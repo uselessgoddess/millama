@@ -1,10 +1,16 @@
-use std::{collections::HashMap, fs, path::Path};
+use std::{collections::HashMap, path::Path};
 
 use {
   anyhow::{Context, Result},
+  config::Config as ConfigBuilder,
   grammers_session::defs::PeerId,
   serde::{Deserialize, Serialize},
 };
+
+// Constants
+pub const DEFAULT_SESSION_FILE: &str = "userbot.session";
+pub const DEFAULT_DEBOUNCE_SECONDS: u64 = 1;
+pub const DEFAULT_HISTORY_LIMIT: usize = 25;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
@@ -25,9 +31,7 @@ pub struct TelegramConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GroqConfig {
   pub api_key: String,
-  #[serde(default = "default_groq_url")]
   pub api_url: String,
-  #[serde(default = "default_model")]
   pub model: String,
   #[serde(default = "default_temperature")]
   pub temperature: f32,
@@ -56,38 +60,34 @@ impl TrackedUser {
   }
 }
 
-pub fn default_groq_url() -> String {
-  "https://api.groq.com/openai/v1/chat/completions".to_string()
-}
-
-pub fn default_model() -> String {
-  "meta-llama/llama-4-maverick-17b-128e-instruct".to_string()
-}
-
-pub fn default_temperature() -> f32 {
+fn default_temperature() -> f32 {
   1.5
 }
 
-pub fn default_session_file() -> String {
-  "userbot.session".to_string()
+fn default_session_file() -> String {
+  DEFAULT_SESSION_FILE.to_string()
 }
 
-pub fn default_debounce() -> u64 {
-  1
+fn default_debounce() -> u64 {
+  DEFAULT_DEBOUNCE_SECONDS
 }
 
-pub fn default_history_limit() -> usize {
-  25
+fn default_history_limit() -> usize {
+  DEFAULT_HISTORY_LIMIT
 }
 
 impl Config {
   pub fn load(path: impl AsRef<Path>) -> Result<Self> {
     let path = path.as_ref();
-    let content = fs::read_to_string(path).with_context(|| {
-      format!("Failed to read config file: {}", path.display())
-    })?;
 
-    let config: Config = toml::from_str(&content).with_context(|| {
+    let config = ConfigBuilder::builder()
+      .add_source(config::File::from(path))
+      .build()
+      .with_context(|| {
+        format!("Failed to load config file: {}", path.display())
+      })?;
+
+    let config: Config = config.try_deserialize().with_context(|| {
       format!("Failed to parse config file: {}", path.display())
     })?;
 

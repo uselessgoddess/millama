@@ -10,16 +10,16 @@ api_hash = "your_api_hash_here"
 # bot_token = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
 
 [groq]
-# Your Groq API key
+# Your Groq API key (required)
 api_key = "your_groq_api_key_here"
 
-# API endpoint (optional, defaults to Groq's API)
+# API endpoint (required)
 api_url = "https://api.groq.com/openai/v1/chat/completions"
 
-# Model to use
+# Model to use (required)
 model = "meta-llama/llama-4-maverick-17b-128e-instruct"
 
-# Temperature for generation (0.0 - 2.0)
+# Temperature for generation (optional, defaults to 1.5)
 temperature = 1.5
 
 [settings]
