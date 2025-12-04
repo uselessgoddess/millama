@@ -4,13 +4,12 @@ AI-powered Telegram message assistant that helps you craft intelligent responses
 
 ## Features
 
-- 🤖 AI-powered message drafts using any OpenAI-compatible API (Groq, OpenAI, Ollama, etc.)
-- 📝 Configurable per-user system prompts
-- ✅ Inline button approval workflow
-- 📊 Structured logging with tracing
-- ⚙️ Configuration via `config.toml`
-- 🔒 Session management with SQLite
-- 🧪 Comprehensive CI/CD with GitHub Actions
+- AI-powered message drafts using any OpenAI-compatible API (Groq, OpenAI, Ollama, etc.)
+- Configurable per-user system prompts
+- Inline button approval workflow
+- Structured logging with tracing
+- Configuration via `config.toml`
+- Session management with SQLite
 
 ## Installation
 
@@ -28,13 +27,13 @@ cargo build --release
 
 ## Configuration
 
-1. Copy the example configuration:
+Copy the example configuration and edit with your settings:
 
 ```bash
 cp config.toml.example config.toml
 ```
 
-2. Edit `config.toml` with your settings:
+Example configuration:
 
 ```toml
 [telegram]
@@ -114,60 +113,9 @@ cargo run -- --trace   # Trace level (very verbose)
 
 1. The bot monitors messages from configured tracked users
 2. After a configurable debounce period (default 1 second), it fetches message history
-3. The history is sent to your configured AI provider (Groq, OpenAI, Ollama, etc.) with the user's system prompt
+3. The history is sent to your configured AI provider with the user's system prompt
 4. An AI-generated draft is sent to you for approval
 5. Approve the message to send it or reject it
-
-## Development
-
-### Running Tests
-
-```bash
-cargo test
-```
-
-### Formatting
-
-```bash
-cargo fmt
-```
-
-### Linting
-
-```bash
-cargo clippy --all-targets --all-features -- -D warnings
-```
-
-### Before Committing
-
-Run all checks:
-
-```bash
-cargo fmt --all -- --check
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test
-cargo build --release
-```
-
-## CI/CD
-
-The project includes comprehensive GitHub Actions workflows:
-
-- ✅ Tests on every push and PR
-- 🎨 Format checking with rustfmt
-- 📎 Linting with clippy
-- 🌙 Nightly Rust checks (continue-on-error)
-- 🏗️ Release builds
-
-## Architecture
-
-```
-src/
-├── main.rs      - Main application entry point
-├── config.rs    - Configuration parsing and validation
-├── llm.rs       - OpenAI-compatible API client
-└── lib.rs       - Library and tests
-```
 
 ## Configuration Reference
 
@@ -238,8 +186,7 @@ This project is provided as-is for educational and personal use.
 
 ## Roadmap
 
-- [x] Support for multiple LLM providers (OpenAI-compatible APIs)
-- [ ] Web interface for configuration
-- [ ] Message templates
-- [ ] Conversation branching
-- [ ] Multi-language support
+- Support for multiple LLM providers (OpenAI-compatible APIs)
+- Web interface for configuration
+- Message templates
+- Conversation branching
