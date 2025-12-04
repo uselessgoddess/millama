@@ -1,0 +1,47 @@
+# Millama Configuration File
+# Copy this file to config.toml and fill in your values
+
+[telegram]
+# Your Telegram API credentials
+api_id = 12345678
+api_hash = "your_api_hash_here"
+
+# Bot token for inline button approval (optional, if not set uses self-messaging)
+# bot_token = "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+
+[groq]
+# Your Groq API key
+api_key = "your_groq_api_key_here"
+
+# API endpoint (optional, defaults to Groq's API)
+api_url = "https://api.groq.com/openai/v1/chat/completions"
+
+# Model to use
+model = "meta-llama/llama-4-maverick-17b-128e-instruct"
+
+# Temperature for generation (0.0 - 2.0)
+temperature = 1.5
+
+[settings]
+# Session file location
+session_file = "userbot.session"
+
+# Debounce time in seconds before generating AI draft
+debounce_seconds = 1
+
+# Maximum number of messages to include in history
+history_limit = 25
+
+# Tracked users configuration
+[[users]]
+# Telegram user ID (can be found via @userinfobot)
+id = 123456789
+# Display name for this user
+name = "John Doe"
+# System prompt for AI when responding to this user
+system_prompt = "Be more serious as possible"
+
+[[users]]
+id = 987654321
+name = "Jane Smith"
+system_prompt = "Be friendly and helpful"

@@ -1,11 +1,8 @@
 use {
   anyhow::{Result, anyhow},
   serde::{Deserialize, Serialize},
+  tracing::{debug, trace},
 };
-
-// TODO: make configurable with config.toml 
-const GROQ_API_URL: &str = "https://api.groq.com/openai/v1/chat/completions";
-const MODEL: &str = "meta-llama/llama-4-maverick-17b-128e-instruct"; 
 
 #[derive(Serialize, Debug)]
 pub struct ChatMessage {
@@ -37,9 +34,16 @@ struct MessageContent {
 
 pub async fn generate_reply(
   api_key: &str,
+  api_url: &str,
+  model: &str,
+  temperature: f32,
   system_prompt: &str,
   history: Vec<ChatMessage>,
 ) -> Result<String> {
+  debug!("Generating reply with model: {}", model);
+  trace!("System prompt: {}", system_prompt);
+  trace!("History length: {}", history.len());
+
   let client = reqwest::Client::new();
 
   let mut messages =
@@ -47,10 +51,11 @@ pub async fn generate_reply(
   messages.extend(history);
 
   let payload =
-    CompletionRequest { model: MODEL.to_string(), messages, temperature: 1.5 };
+    CompletionRequest { model: model.to_string(), messages, temperature };
 
+  debug!("Sending request to Groq API");
   let response = client
-    .post(GROQ_API_URL)
+    .post(api_url)
     .header("Authorization", format!("Bearer {}", api_key))
     .json(&payload)
     .send()
@@ -65,6 +70,8 @@ pub async fn generate_reply(
   let resp_json = response.json::<CompletionResponse>().await?;
 
   if let Some(choice) = resp_json.choices.first() {
+    debug!("Successfully generated reply");
+    trace!("Reply content: {}", choice.message.content);
     Ok(choice.message.content.clone())
   } else {
     Err(anyhow!("No choices in response"))

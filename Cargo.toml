@@ -15,8 +15,12 @@ reqwest = { version = "0.11", features = ["json"] }
 
 serde = { version = "1", features = ["derive"] }
 json = { package = "serde_json", version = "1" }
-regex = { version = "1" }
+toml = "0.8"
 
-dotenv = "0.15"
+# CLI and logging
+clap = { version = "4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+
 anyhow = "1.0"
 rpassword = "7.0"
