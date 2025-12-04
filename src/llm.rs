@@ -32,6 +32,7 @@ struct MessageContent {
   content: String,
 }
 
+#[allow(dead_code)]
 pub async fn generate_reply(
   api_key: &str,
   api_url: &str,
