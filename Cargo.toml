@@ -15,7 +15,8 @@ reqwest = { version = "0.11", features = ["json"] }
 
 serde = { version = "1", features = ["derive"] }
 json = { package = "serde_json", version = "1" }
+regex = { version = "1" }
+
 dotenv = "0.15"
 anyhow = "1.0"
-
 rpassword = "7.0"
