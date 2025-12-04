@@ -231,7 +231,7 @@ async fn handle_update(
       lock.users.get(&peer.id).cloned()
     };
 
-    if let Some(user) = tracked_user {
+    if let Some(user) = tracked_user && !message.outgoing() {
       debug!(
         "Message from tracked user {} ({}): {}",
         user.name,
@@ -301,6 +301,7 @@ async fn process_ai_draft_with_guidance(
   state: &Arc<Mutex<BotState>>,
   rephrase_guidance: Option<String>,
 ) -> Result<()> {
+  // TODO: rewrite this shit
   let (
     api_key,
     api_url,
@@ -309,7 +310,7 @@ async fn process_ai_draft_with_guidance(
     history_limit,
     bot_client,
     bot_self_id,
-    base_system_prompt,
+    system_prompt,
   ) = {
     let lock = state.lock().unwrap();
     (
@@ -320,17 +321,14 @@ async fn process_ai_draft_with_guidance(
       lock.config.settings.history_limit,
       lock.bot_client.clone(),
       lock.bot_self_id,
-      lock.config.ai.base_system_prompt.clone(),
+      lock.config.ai.system_prompt.clone(),
     )
   };
 
-  // Fetch message history
   let mut history_buf: Vec<ChatMessage> = Vec::new();
 
   debug!("Fetching message history for peer {}", peer.id);
 
-  // Convert peer ID to user peer for message history access
-  // This handles both private messages and ensures proper peer resolution
   let peer_for_messages =
     PeerRef { id: PeerId::user(peer.id.bare_id()), auth: Default::default() };
 
@@ -362,22 +360,18 @@ async fn process_ai_draft_with_guidance(
 
   debug!("Loaded {} messages from history", history_buf.len());
 
-  // Build the system prompt with optional base prompt and rephrase guidance
   let system_prompt = {
     let mut prompt = String::new();
 
-    // Add base system prompt if configured
-    if let Some(base) = base_system_prompt.as_ref() {
+    if let Some(base) = system_prompt.as_ref() {
       prompt.push_str(base);
       prompt.push_str("\n\n");
     }
 
-    // Add user-specific system prompt
     prompt.push_str(&user.system_prompt);
 
-    // Add rephrase guidance if provided
     if let Some(guidance) = rephrase_guidance.as_ref() {
-      prompt.push_str("\n\nAdditional guidance: ");
+      prompt.push_str("\n\nRewrite (is more priority than other instructions) guidance: ");
       prompt.push_str(guidance);
     }
 
@@ -686,7 +680,7 @@ async fn regenerate_with_guidance(
     temperature,
     bot_client,
     bot_self_id,
-    base_system_prompt,
+    system_prompt,
   ) = {
     let lock = state.lock().unwrap();
     (
@@ -696,7 +690,7 @@ async fn regenerate_with_guidance(
       lock.config.ai.temperature,
       lock.bot_client.clone(),
       lock.bot_self_id,
-      lock.config.ai.base_system_prompt.clone(),
+      lock.config.ai.system_prompt.clone(),
     )
   };
 
@@ -705,7 +699,7 @@ async fn regenerate_with_guidance(
     let mut prompt = String::new();
 
     // Add base system prompt if configured
-    if let Some(base) = base_system_prompt.as_ref() {
+    if let Some(base) = system_prompt.as_ref() {
       prompt.push_str(base);
       prompt.push_str("\n\n");
     }

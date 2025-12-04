@@ -36,7 +36,7 @@ pub struct AiConfig {
   #[serde(default = "default_temperature")]
   pub temperature: f32,
   #[serde(default)]
-  pub base_system_prompt: Option<String>,
+  pub system_prompt: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,6 +53,7 @@ pub struct Settings {
 pub struct TrackedUser {
   pub id: i64,
   pub name: String,
+  #[serde(default)]
   pub system_prompt: String,
 }
 
