@@ -26,7 +26,7 @@ use {
   config::{Config, TrackedUser},
   llm::ChatMessage,
   tokio::{task::JoinSet, time::sleep},
-  tracing::{debug, error, info, warn},
+  tracing::{trace, debug, error, info, warn},
 };
 
 struct BotState {
@@ -178,6 +178,12 @@ async fn handle_update(
       Ok(peer) => PeerRef::from(peer),
       Err(peer) => peer,
     };
+
+    trace!(
+        "Message from user ({}): {}",
+        peer.id,
+        message.text()
+      );
 
     // Handle messages from tracked users
     let tracked_user = {
@@ -367,7 +373,7 @@ async fn handle_approval(
   info!("Approving message to target ID: {}", target_id);
 
   let target =
-    PeerRef { id: PeerId::user(target_id), auth: Default::default() };
+    PeerRef { id: PeerId::chat(target_id), auth: Default::default() };
 
   // Extract the actual message content
   let content_part = draft_text.split("--- METADATA ---").next().unwrap_or("");
